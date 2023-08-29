@@ -99,6 +99,20 @@ object Fixtures {
           |--(((AaB03x)))--${CRLF}""".stripMargin.getBytes(),
     )
 
+  val multipartFormBytes5 =
+    Chunk.fromArray(
+      s"""-----------------------------4405858663029032291988378472${CR}
+         |Content-Disposition: form-data; name="name"${CR}
+         |Conten-Type: text/plain${CR}
+         |${CR}
+         |somename${CR}
+         |-----------------------------4405858663029032291988378472${CR}
+         |Content-Disposition: form-data; name="description"${CR}
+         |${CR}
+         |somedescription${CR}
+         |-----------------------------4405858663029032291988378472--${CRLF}""".stripMargin.getBytes(),
+    )
+
   private def simpleFormField: Gen[Any, (FormField, Schema[Any], Option[String], Boolean)] =
     for {
       name         <- Gen.option(Gen.string1(Gen.alphaNumericChar))

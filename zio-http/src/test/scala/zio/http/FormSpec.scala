@@ -144,6 +144,15 @@ object FormSpec extends ZIOHttpSpec {
       }
 
     },
+    test("decoding multipart/form-data with default content type") {
+      Form.fromMultipartBytes(multipartFormBytes5).map { form =>
+        assertTrue(
+          form.get("name").get.stringValue.get == "somename",
+          form.get("description").get.stringValue.get == "somedescription",
+        )
+      }
+
+    },
   )
 
   val multiFormStreamingSuite: Spec[Any, Throwable] =
