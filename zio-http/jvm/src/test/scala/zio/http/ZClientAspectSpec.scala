@@ -30,7 +30,9 @@ object ZClientAspectSpec extends ZIOHttpSpec {
 
   val routes: Routes[Any, Response] =
     Route.handled(Method.GET / "hello")(Handler.fromResponse(Response.text("hello"))).toRoutes ++
-    Route.handled(Method.POST / "hello")(Handler.fromFunctionZIO[Request](_.body.asString.map(Response.text(_)).orDie)).toRoutes
+      Route
+        .handled(Method.POST / "hello")(Handler.fromFunctionZIO[Request](_.body.asString.map(Response.text(_)).orDie))
+        .toRoutes
 
   val redir: Routes[Any, Response] =
     Route.handled(Method.GET / "redirect")(Handler.fromResponse(Response.redirect(URL.empty / "hello"))).toRoutes
@@ -151,8 +153,8 @@ object ZClientAspectSpec extends ZIOHttpSpec {
                  |""".stripMargin,
             extractStatus(response) == Status.Ok,
           )
-        }
-      )
+        },
+      ),
     ).provide(
       ZLayer.succeed(Server.Config.default.onAnyOpenPort),
       Server.customized,
