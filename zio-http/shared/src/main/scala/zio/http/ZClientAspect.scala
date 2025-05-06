@@ -510,7 +510,7 @@ object ZClientAspect {
         Env >: Nothing <: Any,
         In >: Nothing <: Body,
         Err >: Throwable <: Throwable,
-        Out >: Nothing <: Response
+        Out >: Nothing <: Response,
       ](
         client: ZClient[Env, ReqEnv, In, Err, Out],
       ): ZClient[Env, ReqEnv, In, Err, Out] = {
@@ -526,10 +526,10 @@ object ZClientAspect {
             sslConfig: Option[ClientSSLConfig],
             proxy: Option[Proxy],
           )(implicit trace: Trace): ZIO[Env & ReqEnv, Err, Response] =
-              CurlLogger.formatCurlCommand(version, method, url, headers, body, proxy, verbose).flatMap { curlCommand =>
-                logEffect(curlCommand) *>
+            CurlLogger.formatCurlCommand(version, method, url, headers, body, proxy, verbose).flatMap { curlCommand =>
+              logEffect(curlCommand) *>
                 oldDriver.request(version, method, url, headers, body, sslConfig, proxy)
-              }
+            }
 
           override def socket[Env1 <: Env](version: Version, url: URL, headers: Headers, app: WebSocketApp[Env1])(
             implicit
@@ -546,14 +546,14 @@ object ZClientAspect {
   object CurlLogger {
 
     def formatCurlCommand(
-                           version: Version,
-                           method: Method,
-                           url: URL,
-                           headers: Headers,
-                           body: Body,
-                           proxy: Option[Proxy],
-                           verbose: Boolean
-                         ): Task[String] = {
+      version: Version,
+      method: Method,
+      url: URL,
+      headers: Headers,
+      body: Body,
+      proxy: Option[Proxy],
+      verbose: Boolean,
+    ): Task[String] = {
       val versionOpt = version match {
         case Version.Default  => Chunk.empty
         case Version.Http_1_0 => Chunk("--http1.0")
@@ -562,17 +562,16 @@ object ZClientAspect {
       val verboseOpt = if (verbose) Chunk("--verbose") else Chunk.empty
       val requestOpt = Chunk(s"--request ${method.name}")
       val headerOpt  = Chunk.fromIterable(headers.map(h => s"--header '${h.headerName}:${h.renderedValue}'"))
-      val bodyOpt = if (body.isComplete) {
+      val bodyOpt    = if (body.isComplete) {
         body match {
           case Body.empty => ZIO.succeed(Chunk.empty[String])
-          case body => {
+          case body       => {
             body.asString.map { bodyAsString =>
               Chunk(s"--data '${bodyAsString.replace("'", "'\\''")}'")
             }
           }
         }
-      }
-      else {
+      } else {
         ZIO.succeed(Chunk.empty[String])
       }
       val proxyOpt   = proxy match {
@@ -598,7 +597,7 @@ object ZClientAspect {
       }
     }
 
-    def formatCurlCommand(request:Request, verbose:Boolean): Task[String] = {
+    def formatCurlCommand(request: Request, verbose: Boolean): Task[String] = {
       formatCurlCommand(
         request.version,
         request.method,
@@ -606,7 +605,7 @@ object ZClientAspect {
         request.headers,
         request.body,
         None,
-        verbose
+        verbose,
       )
     }
 
